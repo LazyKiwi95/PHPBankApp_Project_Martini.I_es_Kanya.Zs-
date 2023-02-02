@@ -1,0 +1,32 @@
+body{
+    background-color: white ;
+}
+.registerForm{
+    width: 30%;
+    margin: 0 auto;
+}
+.registerForm form{
+    display: flex;
+    flex-direction: column;
+}
+input{
+    font-size: 1.3em;
+}
+label{
+    margin: 1% 0;
+    font-weight: bolder;
+    font-size: 1.5em;
+
+}
+#username{
+    margin-top: 5%;
+}
+
+#registerbutton, #cnp{
+    margin-bottom: 5%;
+}
+#registerbutton{
+    width: 15%;
+    height: 35px;
+    text-align: center;
+}

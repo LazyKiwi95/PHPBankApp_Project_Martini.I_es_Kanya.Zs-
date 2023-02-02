@@ -1,0 +1,29 @@
+body{
+    background-color: white ;
+}
+.userDetail{
+    width: 100%;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: row;
+}
+
+h1{
+    margin: 3% 0;
+    font-size: 2.5em;
+}
+h2{
+    margin: 2% 0;
+    font-size: 2em;
+}
+h3, p{
+    display: inline;
+    font-size: 1.5em;
+}
+.data1{
+    width: 33%;
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+    border: 2px solid #003344;
+}
