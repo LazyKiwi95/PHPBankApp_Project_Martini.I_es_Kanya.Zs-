@@ -32,22 +32,24 @@ class Database
         return $result;
     }
 
-    //registration
+    //registration of a user and adding the entered values to database
     public function registerUser($fname, $lname, $email, $password, $cnp)
     {
         $this->connectDatabase();
+
         // check if the username is already taken
+
         $check_username = $this->connecion->query("SELECT * FROM registeredusers WHERE email = '$email' ");
         if ($check_username->num_rows > 0) {
             header("Location: registration.php");
         } else {
+
             // insert the data into the database
+
             $insert = $this->connecion->query("INSERT INTO registeredusers (fname, lname, email, password, cnp) VALUES ('$fname', '$lname', '$email', '$password', $cnp)");
             if ($insert) {
                 $_SESSION['logged_in_user_id'] = $email;
                 $_SESSION['logged_in'] = false;
-            } else {
-                setcookie("error", "something went wrong", time() + 3);
             }
         }
     }
@@ -56,7 +58,9 @@ class Database
     public function loginUser($email, $password)
     {
         $this->connectDatabase();
+
         // check if the username and password match
+
         $check_credentials = $this->connecion->query("SELECT * FROM registeredusers WHERE email = '$email'");
         if ($check_credentials->num_rows > 0) {
             $row = $check_credentials->fetch_assoc();
@@ -64,14 +68,12 @@ class Database
                 $_SESSION['logged_in_user_id'] = $email;
                 $_SESSION['logged_in'] = true;
             } else {
-                setcookie("error", "wrong username or password", time() + 3);
+                //TODO
             }
-        } else {
-            setcookie("error", "wrong username or password", time() + 3);
         }
     }
 
-    //random number generator to insert data to database
+    //random number generator create a 4 digit pin and a 10digit account number inicialise the balance equal to 0
     public function generateRandomNumbers()
     {
         $pin = rand(0000, 9999);
@@ -123,17 +125,23 @@ class Database
             }
         }
     */
-    // adding user personal info and create bank info to database
+
+    // adding user personal info to finaluser table and create bank info to userpersonal table
     public function addFinalUserPersonalUser($country, $region, $city, $street, $number)
     {
         $this->connectDatabase();
         if (isset($_SESSION['logged_in_user_id'])) {
             $useremail = $_SESSION['logged_in_user_id'];
-            //check if email exists in finalusers
+
+            //check if email exists in finalusers table
+
             $checkFinalEmail = $this->connecion->query("SELECT * FROM finalusers 
                                                         JOIN registeredusers ON finalusers.email = registeredusers.email 
                                                         WHERE finalusers.email = '$useremail' 
                                                         GROUP BY registeredusers.email");
+
+            //check if email exists in userpersonal table
+
             $checkPersonaEmail = $this->connecion->query("SELECT * FROM finalusers 
                                                         JOIN userpersonal ON finalusers.email = userpersonal.email 
                                                         WHERE finalusers.email = '$useremail' 
@@ -150,10 +158,10 @@ class Database
                     $insertToPersonal = $this->connecion->query("INSERT INTO userpersonal(email, szamlaszam, pin, egyenleg) 
                                                                 VALUES ('$useremail', '$szamlaszam', $pin, $egyenleg)");
                 } else {
-                    setcookie("error", "can't add to database", time() + 3);
+                    //TODO
                 }
             } else {
-                setcookie("error", "can't add to database", time() + 3);
+                //TODO
             }
             if ($insertToFinal && $insertToPersonal) {
                 $this->connecion->commit();
@@ -161,14 +169,13 @@ class Database
                 $_SESSION['logged_in'] = true;
             } else {
                 $this->connecion->rollback();
-                setcookie("error", "can't add to database", time() + 3);
             }
         } else {
-            setcookie("error", "no email found", time() + 3);
+            //TODO
         }
-
     }
 
+    // return the user firstName and lastName if the email exist in registereusers table (for header)
     public function showUser()
     {
         $this->connectDatabase();
@@ -181,11 +188,11 @@ class Database
                 return true;
             }
         } else {
-            echo "Nincs egyező bejegyzés a adatbázisban.";
             return false;
         } return true;
     }
 
+    // return the user residential information from finalusers if email exist in database
     public function checkAdress()
     {
         $this->connectDatabase();
@@ -198,11 +205,11 @@ class Database
                 return true;
             }
         } else {
-            echo "Nincs egyező bejegyzés a adatbázisban.";
             return false;
         } return  true;
     }
 
+    // return entered values from registeredusers, finalusers and userpersonal table
     public function userDetailPrint(){
         $this->connectDatabase();
         $useremail = $_SESSION['logged_in_user_id'];
@@ -239,7 +246,9 @@ class Database
         }
     }
 
-    public function addMoney($szamlaszam, $egyenleg){
+    //add money to userperonal if account number exist and check the value to be valid
+    public function addMoney($szamlaszam, $egyenleg)
+    {
         if ($egyenleg < 0 ){
             echo "Nem lehet kisebb mint nulla!";
         } elseif ($egyenleg ==0) {
@@ -261,39 +270,30 @@ class Database
         } return true;
     }
 
+    //remove money to userperonal if account number exist and check the value to be valid
     public function withdrawMoney($szamlaszam, $egyenleg)
     {
-        if ($egyenleg < 0)
-        {
+        if ($egyenleg < 0) {
             return "Nem lehet kisebb mint null";
         } elseif ($egyenleg == 0) {
 
             return "Nem lehet null";
-        }
-        else
-        {
+        } else {
             $this->connectDatabase();
             $checkBalance = $this->connecion->query("SELECT egyenleg FROM userpersonal WHERE szamlaszam = '$szamlaszam'");
             if (mysqli_num_rows($checkBalance) > 0) {
-                while ($row = mysqli_fetch_assoc($checkBalance))
-                {
-                    if ($row['egyenleg'] < $egyenleg)
-                    {
+                while ($row = mysqli_fetch_assoc($checkBalance)) {
+                    if ($row['egyenleg'] < $egyenleg) {
                         return "Nincs eleg penz";
-                    }
-                    else
-                    {
+                    } else {
                         $removeFromUser = $this->connecion->query("UPDATE userpersonal SET egyenleg = egyenleg - $egyenleg WHERE szamlaszam = '$szamlaszam'");
-                        if ($removeFromUser)
-                        {
+                        if ($removeFromUser) {
                             $currentDate = date("Y-m-d");
                             $history = $this->connecion->query("INSERT INTO history (datum, tipus, ertek, szamlaszam, uzenet) VALUES ('$currentDate', 'Penz kiveves', '$egyenleg', '$szamlaszam', 'Nincs megjegyzes')");
-                            if ($history){
+                            if ($history) {
                                 return true;
                             }
-                        }
-                        else
-                        {
+                        } else {
                             return "Nem sikerult levenni a penzt";
                         }
                     }
@@ -302,16 +302,14 @@ class Database
         } return true;
     }
 
+    ////send money between two users via account number if account numbers exists and check the value to be valid
     public function sendAndReceiveMoney($kuldoSzamla, $egyenleg, $fogadoSzamla)
     {
-        if ($egyenleg < 0)
-        {
+        if ($egyenleg < 0) {
             return "Nem lehet kisebb mint null";
         } elseif ($egyenleg == 0) {
             return "Nem lehet null";
-        }
-        else
-        {
+        } else {
             $this->connectDatabase();
             $this->connecion->begin_transaction();
             $addForUser = $this->connecion->query("UPDATE userpersonal SET egyenleg = egyenleg + $egyenleg WHERE szamlaszam = '$fogadoSzamla'");
@@ -320,12 +318,9 @@ class Database
                 while ($row = mysqli_fetch_assoc($checkBalance)) {
                     if ($row['egyenleg'] < $egyenleg) {
                         return "Nincs eleg penz";
-                    }
-                    else
-                    {
+                    } else {
                         $removeFromUser = $this->connecion->query("UPDATE userpersonal SET egyenleg = egyenleg - $egyenleg WHERE szamlaszam = '$kuldoSzamla'");
-                        if ($removeFromUser && $addForUser)
-                        {
+                        if ($removeFromUser && $addForUser) {
                             $this->connecion->commit();
                             $currentDate = date("Y-m-d");
                             $message = $_POST['message'];
@@ -334,9 +329,7 @@ class Database
                             if ($history1 && $history2){
                                 return "siker";
                             }
-                        }
-                        else
-                        {
+                        } else {
                             $this->connecion->rollback();
                             return "Nem sikerult levenni a penzt";
                         }
@@ -346,6 +339,7 @@ class Database
         } return true;
     }
 
+    //return data from history table and format into html table
     public function historyPrint()
     {
         $this->connectDatabase();
@@ -358,24 +352,47 @@ class Database
         if (mysqli_num_rows($userHistory) > 0) {
                         echo "<table>
                 <tr>
-                    <th>Datum</th>
-                    <th>Nev</th>
+                    <th>Tranzakcio Datum</th>
+                    <th>Elofizeto Neve</th>
                     <th>Szamlaszam</th>
                     <th>Ertek</th>
                     <th>Tranzakcio tipusa</th>
                     <th>Uzenet</th>
                 </tr>";
             while ($row = mysqli_fetch_assoc($userHistory)) {
+                if ($row['tipus'] == "Penzt kapott" || $row['tipus'] == "Penz feltoltes") {
+                    $sign = "+";
+                    $color = "green";
+                } else {
+                    $sign = "-";
+                    $color = "red";
+                }
                 echo "<tr>
-                        <td>" . $row['datum'] . "</td>
-                        <td>" . $row['fname'] . " " . $row['lname'] . "</td>
-                        <td>" . $row['szamlaszam'] . "</td>
-                        <td>" . $row['ertek'] . "</td>
-                        <td>" . $row['tipus'] . "</td>
-                        <td>" . $row['uzenet'] . "</td>
-                    </tr>";
+                <td>" . $row['datum'] . "</td>
+                <td>" . $row['fname'] . " " . $row['lname'] . "</td>
+                <td>" . $row['szamlaszam'] . "</td>
+                <td style='color: $color'>" . $sign . $row['ertek'] . "</td>
+                <td>" . $row['tipus'] . "</td>
+                <td>" . $row['uzenet'] . "</td>
+            </tr>";
             }
             echo "</table>";
+        }
+    }
+
+    //validate entered pin if its ok than operations can be executed by user
+    public function pinCheck($pin)
+    {
+        $this->connectDatabase();
+        $useremail = $_SESSION['logged_in_user_id'];
+        $pinEqualToDbPin = $this->connecion->query("SELECT pin FROM userpersonal WHERE pin = $pin");
+        $_SESSION['logged_in_user_id'] = $useremail;
+        if (mysqli_num_rows($pinEqualToDbPin) > 0) {
+            while ($row = mysqli_fetch_assoc($pinEqualToDbPin)) {
+                if($row['pin'] == $pin) {
+                    $_SESSION['userPin'] = $pin;
+                }
+            }
         }
     }
 

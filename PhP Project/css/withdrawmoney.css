@@ -1,0 +1,52 @@
+body{
+    background-color: white ;
+}
+.withdrawMoney{
+    width: 30%;
+    margin: 0 auto;
+}
+.withdrawMoney form{
+    display: flex;
+    flex-direction: column;
+}
+.pinCheck{
+    width: 30%;
+    margin: 0 auto;
+}
+h1 {
+    margin-left: 22%;
+    padding-top: 25%;
+    padding-bottom: 5%;
+    font-size: 4em;
+}
+input{
+    font-size: 1.3em;
+}
+label{
+    margin: 1% 0;
+    font-weight: bolder;
+    font-size: 1.5em;
+    text-align: center;
+    padding-bottom: 2%;
+}
+#szamlaszam{
+    margin-top: 1%;
+}
+#egyenleg{
+    margin-left: 10%;
+}
+#egyenleg, #withdrawMoney{
+    margin-bottom: 5%;
+}
+#withdrawMoney{
+    width: 30%;
+    height: 35px;
+    margin-left: 35%;
+    margin-bottom: 55%;
+}
+#pin{
+    width: 40%;
+    height: 7%;
+    margin-left: 13%;
+    margin-bottom: 45%;
+}
